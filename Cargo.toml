@@ -1,0 +1,65 @@
+[workspace]
+resolver = "2"
+members = [
+    "vello/vello",
+    "vello/vello_encoding",
+    "vello/vello_shaders",
+    "vello/vello_tests",
+
+    "vello/examples/headless",
+    "vello/examples/with_winit",
+    "vello/examples/run_wasm",
+    "vello/examples/scenes",
+    "vello/examples/simple",
+    "vello/examples/simple_sdl2",
+]
+
+[workspace.package]
+version = "0.3.0"
+edition = "2021"
+rust-version = "1.76"
+license = "MIT or Apache 2.0"
+repository = "https://github.com/rottenfront/kreuz"
+
+[workspace.dependencies]
+vello = { version = "0.3.0", path = "vello/vello" }
+vello_encoding = { version = "0.3.0", path = "vello/vello_encoding" }
+vello_shaders = { version = "0.3.0", path = "vello/vello_shaders" }
+bytemuck = { version = "1.18.0", features = ["derive"] }
+skrifa = "0.22.3"
+peniko = "0.2.0"
+futures-intrusive = "0.5.0"
+raw-window-handle = "0.6.2"
+smallvec = "1.13.2"
+static_assertions = "1.1.0"
+thiserror = "1.0.64"
+
+# NOTE: Make sure to keep this in sync with the version badge in README.md and vello/README.md
+wgpu = { version = "22.1.0" }
+log = "0.4.22"
+image = { version = "0.25.2", default-features = false }
+
+# Used for examples
+clap = "4.5.19"
+anyhow = "1.0.89"
+pollster = "0.3.0"
+web-time = "1.1.0"
+wgpu-profiler = "0.18.2"
+scenes = { path = "vello/examples/scenes" }
+
+winit = "0.30.5"
+
+[workspace.lints]
+clippy.doc_markdown = "warn"
+clippy.semicolon_if_nothing_returned = "warn"
+
+[package]
+name = "kreuz"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vello.workspace = true
+anyhow.workspace = true
+winit.workspace = true
+pollster.workspace = true
