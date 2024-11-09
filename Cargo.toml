@@ -1,6 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/*",
+
     "vello/vello",
     "vello/vello_encoding",
     "vello/vello_shaders",
@@ -12,6 +14,10 @@ members = [
     "vello/examples/scenes",
     "vello/examples/simple",
     "vello/examples/simple_sdl2",
+    "crates/kreuz-window",
+    "crates/kreuz-ui",
+    "crates/kreuz-vello",
+    "crates/kreuz-winit",
 ]
 
 [workspace.package]
@@ -25,29 +31,36 @@ repository = "https://github.com/rottenfront/kreuz"
 vello = { version = "0.3.0", path = "vello/vello" }
 vello_encoding = { version = "0.3.0", path = "vello/vello_encoding" }
 vello_shaders = { version = "0.3.0", path = "vello/vello_shaders" }
+scenes = { path = "vello/examples/scenes" }
+
 bytemuck = { version = "1.18.0", features = ["derive"] }
-skrifa = "0.22.3"
+skrifa = "0.24.0"
 peniko = "0.2.0"
 futures-intrusive = "0.5.0"
 raw-window-handle = "0.6.2"
 smallvec = "1.13.2"
 static_assertions = "1.1.0"
-thiserror = "1.0.64"
+thiserror = "1.0.66"
 
-# NOTE: Make sure to keep this in sync with the version badge in README.md and vello/README.md
 wgpu = { version = "22.1.0" }
 log = "0.4.22"
 image = { version = "0.25.2", default-features = false }
 
-# Used for examples
 clap = "4.5.19"
-anyhow = "1.0.89"
-pollster = "0.3.0"
+anyhow = "1.0.92"
+pollster = "0.4.0"
 web-time = "1.1.0"
 wgpu-profiler = "0.18.2"
-scenes = { path = "vello/examples/scenes" }
 
 winit = "0.30.5"
+
+# abstractions
+kreuz-ui = { path = "crates/kreuz-ui" }
+kreuz-window = { path = "crates/kreuz-window" }
+
+# implementations
+kreuz-vello = { path = "crates/kreuz-vello" }
+kreuz-winit = { path = "crates/kreuz-winit" }
 
 [workspace.lints]
 clippy.doc_markdown = "warn"
@@ -55,11 +68,13 @@ clippy.semicolon_if_nothing_returned = "warn"
 
 [package]
 name = "kreuz"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
-vello.workspace = true
-anyhow.workspace = true
-winit.workspace = true
-pollster.workspace = true
+kreuz-ui.workspace = true
+kreuz-vello.workspace = true
+kreuz-winit.workspace = true
