@@ -1,3 +1,11 @@
+use kreuz_ui::{
+    skrifa::{self, raw::FileRef, FontRef},
+    Glyph, Scene,
+};
+use kurbo::Affine;
+use peniko::{Blob, Brush, BrushRef, Color, Fill, Font, StyleRef};
+use std::sync::Arc;
+
 // This is very much a hack to get things working.
 // On Windows, can set this to "c:\\Windows\\Fonts\\seguiemj.ttf" to get color emoji
 const ROBOTO_FONT: &[u8] = include_bytes!("../assets/roboto/Roboto-Regular.ttf");
@@ -138,7 +146,7 @@ impl SimpleText {
         let brush = brush.into();
         let style = style.into();
         let axes = font_ref.axes();
-        let font_size = vello::skrifa::instance::Size::new(size);
+        let font_size = skrifa::instance::Size::new(size);
         let var_loc = axes.location(variations.iter().copied());
         let charmap = font_ref.charmap();
         let metrics = font_ref.metrics(font_size, &var_loc);
@@ -184,7 +192,6 @@ impl SimpleText {
         transform: Affine,
         text: &str,
     ) {
-        use vello::peniko::Fill;
         let brush = brush.unwrap_or(&Brush::Solid(Color::WHITE));
         self.add_run(
             scene,
@@ -199,11 +206,10 @@ impl SimpleText {
     }
 }
 
-fn to_font_ref(font: &Font) -> Option<FontRef<'_>> {
-    use vello::skrifa::raw::FileRef;
+fn to_font_ref(font: &Font) -> FontRef<'_> {
     let file_ref = FileRef::new(font.data.as_ref()).ok()?;
     match file_ref {
-        FileRef::Font(font) => Some(font),
+        FileRef::Font(font) => font,
         FileRef::Collection(collection) => collection.get(font.index).ok(),
     }
 }

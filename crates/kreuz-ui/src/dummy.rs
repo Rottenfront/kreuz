@@ -5,7 +5,7 @@ use super::*;
 
 pub struct DummyView;
 
-impl View for DummyView {
+impl RootView for DummyView {
     fn render(&self, scene: &mut Scene) {
         scene.fill(
             peniko::Fill::NonZero,

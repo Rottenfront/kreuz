@@ -5,7 +5,7 @@ pub enum ViewResponce {
     Handled,
 }
 
-pub trait View {
+pub trait RootView {
     fn render(&self, scene: &mut Scene);
 
     fn handle_event(&mut self, event: &ViewEvent) -> ViewResponce;

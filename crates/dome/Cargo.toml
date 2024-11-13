@@ -1,0 +1,10 @@
+[package]
+name = "dome"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+kurbo.workspace = true
+
+kreuz-ui.workspace = true
+peniko.workspace = true

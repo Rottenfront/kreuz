@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    ".",
     "crates/*",
 
     "vello/vello",
@@ -14,10 +15,6 @@ members = [
     "vello/examples/scenes",
     "vello/examples/simple",
     "vello/examples/simple_sdl2",
-    "crates/kreuz-window",
-    "crates/kreuz-ui",
-    "crates/kreuz-vello",
-    "crates/kreuz-winit",
 ]
 
 [workspace.package]
@@ -34,20 +31,21 @@ vello_shaders = { version = "0.3.0", path = "vello/vello_shaders" }
 scenes = { path = "vello/examples/scenes" }
 
 bytemuck = { version = "1.18.0", features = ["derive"] }
-skrifa = "0.24.0"
+skrifa = "0.24.1"
 peniko = "0.2.0"
+kurbo = "0.11.0"
 futures-intrusive = "0.5.0"
 raw-window-handle = "0.6.2"
 smallvec = "1.13.2"
 static_assertions = "1.1.0"
-thiserror = "1.0.66"
+thiserror = "2.0.2"
 
 wgpu = { version = "22.1.0" }
 log = "0.4.22"
-image = { version = "0.25.2", default-features = false }
+image = { version = "0.25.5", default-features = false }
 
 clap = "4.5.19"
-anyhow = "1.0.92"
+anyhow = "1.0.93"
 pollster = "0.4.0"
 web-time = "1.1.0"
 wgpu-profiler = "0.18.2"

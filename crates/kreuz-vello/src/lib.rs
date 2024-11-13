@@ -1,4 +1,4 @@
-use kreuz_ui::{View, ViewEvent};
+use kreuz_ui::{RootView, ViewEvent};
 use kreuz_window::{
     AppHandler, AppResponce, MouseButton, SubwindowHandler, WindowEvent, WindowHandler, WindowId,
 };
@@ -60,7 +60,7 @@ fn window_to_view_event(event: WindowEvent, ctx: &mut Context) -> Option<ViewEve
     }
 }
 
-pub struct OneWindowVelloApp<'s, W: WindowHandler, V: View> {
+pub struct OneWindowVelloApp<'s, W: WindowHandler, V: RootView> {
     context: RenderContext,
     renderer: Option<Renderer>,
     ctx: Context,
@@ -69,7 +69,7 @@ pub struct OneWindowVelloApp<'s, W: WindowHandler, V: View> {
     root_view: V,
 }
 
-impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: View> AppHandler<W, SW>
+impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: RootView> AppHandler<W, SW>
     for OneWindowVelloApp<'s, W, V>
 {
     fn handle_window_event(&mut self, window: WindowId, event: WindowEvent) -> AppResponce {
@@ -178,7 +178,9 @@ impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: View> AppHandler<W, SW>
     }
 }
 
-pub fn make_vello_app<'s, W: WindowHandler + 's, V: View>(view: V) -> OneWindowVelloApp<'s, W, V> {
+pub fn make_vello_app<'s, W: WindowHandler + 's, V: RootView>(
+    view: V,
+) -> OneWindowVelloApp<'s, W, V> {
     OneWindowVelloApp {
         context: RenderContext::new(),
         renderer: Default::default(),
