@@ -12,57 +12,41 @@ struct CalcData {
 
 pub struct RegionCalc {
     arena: Arena,
+    text: SimpleText,
     calc_data: HashMap<ViewId, CalcData>,
 }
 
 impl RegionCalc {
-    pub fn new(arena: Arena) -> Self {
+    pub fn new(arena: Arena, text: SimpleText) -> Self {
         Self {
             arena,
+            text,
             calc_data: HashMap::new(),
         }
     }
 
-    fn get_paragraph_size(&self, entity: &ParagraphEntity, width: f64) -> Region {
-        let lines = entity.text.clone().lines();
-
-        for line in lines {
-            let mut x = line_x;
-            let words = line
-                .split(" ")
-                .map(|s| String::from(s))
-                .collect::<Vec<String>>();
-
-            let mut is_first_in_line = true;
-
-            for word in words {
-                let layout = rc
-                    .text()
-                    .new_text_layout(if is_first_in_line {
-                        word
-                    } else {
-                        " ".to_owned() + &word
+    fn get_paragraph_size(&mut self, entity: &ParagraphEntity, max_width: f64) -> Region {
+        let text_run = self.text.make_font_run(entity.styles.size as f32, None);
+        let line_height = text_run.get_line_height();
+        let space_width = text_run.get_char_data(' ').width;
+        let height = entity
+            .text
+            .clone()
+            .lines()
+            .map(|line| {
+                line.split_whitespace()
+                    .fold((0.0, line_height), |(x, height), word| {
+                        let width = text_run.get_word_width(word);
+                        if x + width > max_width {
+                            (width + space_width, height + line_height)
+                        } else {
+                            (x + width + space_width, height)
+                        }
                     })
-                    .font(font.clone(), FONT_SIZE)
-                    .default_attribute(TextAttribute::TextColor(color))
-                    .build()?;
-                is_first_in_line = false;
-
-                let current_width = layout.size().width;
-                if current_width + x > max_x {
-                    line_x = x0;
-                    x = line_x;
-                    y += dy;
-                }
-
-                rc.draw_text(&layout, (x, y));
-
-                x += current_width;
-            }
-
-            y += dy;
-            line_x = x0;
-        }
+                    .1
+            })
+            .fold(0.0, |acc, e| acc + e);
+        Region::new(0.0, 0.0, max_width, height, 0.0)
     }
 
     pub fn compute_regions(&mut self, root: ViewId, bounds: Region) -> Option<()> {

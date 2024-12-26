@@ -207,37 +207,37 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
     }
 
     fn draw_text(&mut self, entity: &TextEntity, region: Region) {
-        let layout = self
-            .drawer
-            .text()
-            .new_text_layout(&entity.text)
-            .default_attribute(TextAttribute::FontFamily(entity.styles.font_family))
-            .default_attribute(TextAttribute::FontSize(entity.styles.size))
-            .max_width(region.width())
-            .build();
-        let layout = if let Some(layout) = layout {
-            layout
-        } else {
-            return;
-        };
-        self.drawer.draw_text(&layout, region.origin());
+        // let layout = self
+        //     .drawer
+        //     .text()
+        //     .new_text_layout(&entity.text)
+        //     .default_attribute(TextAttribute::FontFamily(entity.styles.font_family))
+        //     .default_attribute(TextAttribute::FontSize(entity.styles.size))
+        //     .max_width(region.width())
+        //     .build();
+        // let layout = if let Some(layout) = layout {
+        //     layout
+        // } else {
+        //     return;
+        // };
+        // self.drawer.draw_text(&layout, region.origin());
     }
 
     fn draw_paragraph(&mut self, entity: &ParagraphEntity, region: Region) {
-        let layout = self
-            .drawer
-            .text()
-            .new_text_layout(&entity.text)
-            .default_attribute(TextAttribute::FontFamily(entity.styles.font_family))
-            .default_attribute(TextAttribute::FontSize(entity.styles.size))
-            .max_width(region.width())
-            .build();
-        let layout = if let Some(layout) = layout {
-            layout
-        } else {
-            return;
-        };
-        self.drawer.draw_text(&layout, region.origin());
+        // let layout = self
+        //     .drawer
+        //     .text()
+        //     .new_text_layout(&entity.text)
+        //     .default_attribute(TextAttribute::FontFamily(entity.styles.font_family))
+        //     .default_attribute(TextAttribute::FontSize(entity.styles.size))
+        //     .max_width(region.width())
+        //     .build();
+        // let layout = if let Some(layout) = layout {
+        //     layout
+        // } else {
+        //     return;
+        // };
+        // self.drawer.draw_text(&layout, region.origin());
     }
 
     fn draw_canvas(&mut self, entity: &CanvasEntity, region: Region) {

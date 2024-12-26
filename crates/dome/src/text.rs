@@ -1,5 +1,13 @@
 use kreuz_ui::{
-    skrifa::{self, raw::FileRef, FontRef},
+    skrifa::{
+        self,
+        charmap::Charmap,
+        instance::Location,
+        metrics::{GlyphMetrics, Metrics},
+        prelude::Size as SkrifaSize,
+        raw::FileRef,
+        FontRef, GlyphId, MetadataProvider,
+    },
     Glyph, Scene,
 };
 use kurbo::Affine;
@@ -20,6 +28,105 @@ pub struct SimpleText {
     inconsolata: Font,
     noto_emoji_colr_subset: Font,
     noto_emoji_cbtf_subset: Font,
+}
+
+pub struct SimpleTextRun<'a> {
+    font: &'a Font,
+    font_ref: FontRef<'a>,
+    size: f32,
+    font_size: SkrifaSize,
+    var_loc: Arc<Location>,
+    glyph_transform: Option<Affine>,
+    charmap: Charmap<'a>,
+    metrics: Metrics,
+    line_height: f32,
+    glyph_metrics: GlyphMetrics<'a>,
+}
+
+pub struct GlyphData {
+    pub gid: GlyphId,
+    pub width: f32,
+}
+
+impl<'a> SimpleTextRun<'a> {
+    fn new(
+        font: &'a Font,
+        size: f32,
+        variations: &[(&str, f32)],
+        glyph_transform: Option<Affine>,
+    ) -> Self {
+        let font_ref = to_font_ref(font);
+        let axes = font_ref.axes();
+        let font_size = SkrifaSize::new(size);
+        let var_loc = Arc::new(axes.location(variations.iter().copied()));
+        let charmap = font_ref.charmap();
+        let metrics = font_ref.metrics(font_size, &var_loc.clone());
+        let line_height = metrics.ascent - metrics.descent + metrics.leading;
+        let glyph_metrics = font_ref.glyph_metrics(font_size, &var_loc.clone());
+        Self {
+            font,
+            font_ref,
+            size,
+            font_size,
+            var_loc,
+            glyph_transform,
+            charmap,
+            metrics,
+            line_height,
+            glyph_metrics,
+        }
+    }
+
+    pub fn get_line_height(&self) -> f32 {
+        self.line_height
+    }
+
+    pub fn get_char_data(&self, ch: char) -> GlyphData {
+        let gid = self.charmap.map(ch).unwrap_or_default();
+        GlyphData {
+            gid,
+            width: self.glyph_metrics.advance_width(gid).unwrap_or_default(),
+        }
+    }
+
+    pub fn get_word_width(&self, word: &str) -> f32 {
+        word.chars()
+            .map(|ch| self.get_char_data(ch).width)
+            .fold(0.0, |res, width| res + width)
+    }
+
+    pub fn draw_word<'b>(
+        &self,
+        scene: &mut Scene,
+        brush: impl Into<BrushRef<'b>>,
+        style: impl Into<StyleRef<'b>>,
+        transform: Affine,
+        word: &str,
+    ) -> f32 {
+        let mut pen_x = 0.0;
+        scene
+            .draw_glyphs(self.font)
+            .font_size(self.font_size)
+            .transform(transform)
+            .glyph_transform(self.glyph_transform)
+            .normalized_coords(self.var_loc.coords())
+            .brush(brush.into())
+            .hint(false)
+            .draw(
+                style.into(),
+                text.chars().map(|ch| {
+                    let GlyphData { gid, width } = self.get_char_data(ch);
+                    let x = pen_x;
+                    pen_x += width;
+                    Glyph {
+                        id: gid.to_u32(),
+                        x,
+                        y: 0.0,
+                    }
+                }),
+            );
+        pen_x
+    }
 }
 
 impl SimpleText {
@@ -142,7 +249,7 @@ impl SimpleText {
             &self.inconsolata
         };
         let font = font.unwrap_or(default_font);
-        let font_ref = to_font_ref(font).unwrap();
+        let font_ref = to_font_ref(font);
         let brush = brush.into();
         let style = style.into();
         let axes = font_ref.axes();
@@ -181,6 +288,10 @@ impl SimpleText {
                     })
                 }),
             );
+    }
+
+    pub fn make_font_run(&self, size: f32, glyph_transform: Option<Affine>) -> SimpleTextRun {
+        SimpleTextRun::new(&self.inconsolata, size, &[], glyph_transform)
     }
 
     pub fn add(
