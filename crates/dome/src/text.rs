@@ -30,15 +30,12 @@ pub struct SimpleText {
     noto_emoji_cbtf_subset: Font,
 }
 
-pub struct SimpleTextRun<'a> {
+pub struct TextRunner<'a> {
     font: &'a Font,
-    font_ref: FontRef<'a>,
     size: f32,
-    font_size: SkrifaSize,
-    var_loc: Arc<Location>,
     glyph_transform: Option<Affine>,
+    var_loc: Arc<Location>,
     charmap: Charmap<'a>,
-    metrics: Metrics,
     line_height: f32,
     glyph_metrics: GlyphMetrics<'a>,
 }
@@ -48,32 +45,34 @@ pub struct GlyphData {
     pub width: f32,
 }
 
-impl<'a> SimpleTextRun<'a> {
+impl<'a> TextRunner<'a> {
     fn new(
         font: &'a Font,
         size: f32,
         variations: &[(&str, f32)],
         glyph_transform: Option<Affine>,
     ) -> Self {
-        let font_ref = to_font_ref(font);
+        let font_ref = to_font_ref(font).unwrap();
         let axes = font_ref.axes();
         let font_size = SkrifaSize::new(size);
         let var_loc = Arc::new(axes.location(variations.iter().copied()));
         let charmap = font_ref.charmap();
-        let metrics = font_ref.metrics(font_size, &var_loc.clone());
+        // TODO: dumb borrow checker, fix that later
+        let metrics = Metrics::new(&font_ref, font_size, unsafe {
+            std::mem::transmute::<_, &'static Location>(var_loc.as_ref())
+        });
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font_ref.glyph_metrics(font_size, &var_loc.clone());
+        let glyph_metrics = font_ref.glyph_metrics(font_size, unsafe {
+            std::mem::transmute::<_, &'static Location>(var_loc.as_ref())
+        });
         Self {
             font,
-            font_ref,
             size,
-            font_size,
-            var_loc,
             glyph_transform,
             charmap,
-            metrics,
             line_height,
             glyph_metrics,
+            var_loc,
         }
     }
 
@@ -106,7 +105,7 @@ impl<'a> SimpleTextRun<'a> {
         let mut pen_x = 0.0;
         scene
             .draw_glyphs(self.font)
-            .font_size(self.font_size)
+            .font_size(self.size)
             .transform(transform)
             .glyph_transform(self.glyph_transform)
             .normalized_coords(self.var_loc.coords())
@@ -114,7 +113,7 @@ impl<'a> SimpleTextRun<'a> {
             .hint(false)
             .draw(
                 style.into(),
-                text.chars().map(|ch| {
+                word.chars().map(|ch| {
                     let GlyphData { gid, width } = self.get_char_data(ch);
                     let x = pen_x;
                     pen_x += width;
@@ -249,7 +248,7 @@ impl SimpleText {
             &self.inconsolata
         };
         let font = font.unwrap_or(default_font);
-        let font_ref = to_font_ref(font);
+        let font_ref = to_font_ref(font).unwrap();
         let brush = brush.into();
         let style = style.into();
         let axes = font_ref.axes();
@@ -290,8 +289,8 @@ impl SimpleText {
             );
     }
 
-    pub fn make_font_run(&self, size: f32, glyph_transform: Option<Affine>) -> SimpleTextRun {
-        SimpleTextRun::new(&self.inconsolata, size, &[], glyph_transform)
+    pub fn make_font_run(&self, size: f32, glyph_transform: Option<Affine>) -> TextRunner {
+        TextRunner::new(&self.inconsolata, size, &[], glyph_transform)
     }
 
     pub fn add(
@@ -317,10 +316,10 @@ impl SimpleText {
     }
 }
 
-fn to_font_ref(font: &Font) -> FontRef<'_> {
+fn to_font_ref(font: &Font) -> Option<FontRef<'_>> {
     let file_ref = FileRef::new(font.data.as_ref()).ok()?;
     match file_ref {
-        FileRef::Font(font) => font,
+        FileRef::Font(font) => Some(font),
         FileRef::Collection(collection) => collection.get(font.index).ok(),
     }
 }

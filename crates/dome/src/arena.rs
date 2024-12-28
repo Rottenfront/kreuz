@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use kurbo::RoundedRect;
-
 use crate::{Entity, Region, UiNode};
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -33,15 +31,15 @@ impl Arena {
         self.views.get(&id).map(|data| &data.view)
     }
 
-    pub fn get_previuos_region(&self, id: ViewId) -> Option<RoundedRect> {
+    pub fn get_previuos_region(&self, id: ViewId) -> Option<Region> {
         self.views.get(&id).map(|data| data.prev_region)
     }
 
-    pub fn get_relative_region(&self, id: ViewId) -> Option<RoundedRect> {
+    pub fn get_relative_region(&self, id: ViewId) -> Option<Region> {
         self.views.get(&id).map(|data| data.relative_region)
     }
 
-    pub fn get_real_region(&self, id: ViewId) -> Option<RoundedRect> {
+    pub fn get_real_region(&self, id: ViewId) -> Option<Region> {
         self.views.get(&id).map(|data| data.real_region)
     }
 
@@ -53,19 +51,19 @@ impl Arena {
         self.views.get_mut(&id).map(|data| &mut data.view)
     }
 
-    pub fn set_previuos_region(&mut self, id: ViewId, region: RoundedRect) {
+    pub fn set_previuos_region(&mut self, id: ViewId, region: Region) {
         self.views
             .get_mut(&id)
             .map(|data| data.prev_region = region);
     }
 
-    pub fn set_relative_region(&mut self, id: ViewId, region: RoundedRect) {
+    pub fn set_relative_region(&mut self, id: ViewId, region: Region) {
         self.views
             .get_mut(&id)
             .map(|data| data.relative_region = region);
     }
 
-    pub fn set_real_region(&mut self, id: ViewId, region: RoundedRect) {
+    pub fn set_real_region(&mut self, id: ViewId, region: Region) {
         self.views
             .get_mut(&id)
             .map(|data| data.real_region = region);

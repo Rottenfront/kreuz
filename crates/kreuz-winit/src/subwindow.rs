@@ -1,23 +1,8 @@
 use anyhow::Result;
-use kreuz_window::{
-    AppHandler, ButtonState, MouseButton, SubwindowHandler, SubwindowParams, WindowEvent,
-    WindowHandler, WindowId, WindowParams,
-};
+use kreuz_window::{SubwindowHandler, SubwindowParams};
 use raw_window_handle::{
     DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle,
 };
-use std::{collections::HashMap, sync::Arc};
-use winit::{
-    application::ApplicationHandler,
-    dpi::{LogicalPosition, LogicalSize},
-    event::{
-        ElementState as WinitElementState, MouseButton as WinitMouseButton,
-        WindowEvent as WinitWindowEvent,
-    },
-    event_loop::{ActiveEventLoop, EventLoop},
-    window::{Window, WindowId as WinitId},
-};
-
 #[derive(Clone)]
 pub struct WinitSubwinHandler;
 

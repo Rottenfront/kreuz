@@ -72,7 +72,7 @@ pub struct OneWindowVelloApp<'s, W: WindowHandler, V: RootView> {
 impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: RootView> AppHandler<W, SW>
     for OneWindowVelloApp<'s, W, V>
 {
-    fn handle_window_event(&mut self, window: WindowId, event: WindowEvent) -> AppResponce {
+    fn handle_window_event(&mut self, _window: WindowId, event: WindowEvent) -> AppResponce {
         let render_state = match &mut self.state {
             RenderState::Active(state) => state,
             _ => return AppResponce::Handled,
@@ -145,7 +145,7 @@ impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: RootView> AppHandler<W,
         AppResponce::Handled
     }
 
-    fn handle_window_update(&mut self, id: WindowId, window: W) -> AppResponce {
+    fn handle_window_update(&mut self, _id: WindowId, window: W) -> AppResponce {
         let RenderState::Suspended = &mut self.state else {
             return AppResponce::Handled;
         };
@@ -173,7 +173,7 @@ impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: RootView> AppHandler<W,
         AppResponce::Handled
     }
 
-    fn handle_subwindow_update(&mut self, id: WindowId, window: SW) -> AppResponce {
+    fn handle_subwindow_update(&mut self, _id: WindowId, _window: SW) -> AppResponce {
         AppResponce::Handled
     }
 }

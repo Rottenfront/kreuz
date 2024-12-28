@@ -1,19 +1,17 @@
-use std::sync::{atomic::AtomicUsize, Mutex};
+use std::sync::atomic::AtomicUsize;
 
-use super::*;
 use peniko::kurbo::{Point, Size};
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Default)]
 pub struct WindowId(usize);
 
-static mut LAST_ID: Mutex<usize> = Mutex::new(0);
+static LAST_ID: AtomicUsize = AtomicUsize::new(0);
 
 impl WindowId {
     pub fn new() -> WindowId {
-        let mut last_id = unsafe { LAST_ID.lock() }.unwrap();
-        let id = WindowId(*last_id);
-        *last_id += 1;
+        let id = WindowId(LAST_ID.load(std::sync::atomic::Ordering::Relaxed));
+        LAST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         id
     }
 }

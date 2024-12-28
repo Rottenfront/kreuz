@@ -3,21 +3,21 @@ use std::collections::HashMap;
 
 use crate::*;
 
-pub type Region = RoundedRect;
+pub type Region = Rect;
 
-struct CalcData {
+pub struct CalcData {
     min_size: SizeConstraints,
     max_size: SizeConstraints,
 }
 
-pub struct RegionCalc {
-    arena: Arena,
-    text: SimpleText,
-    calc_data: HashMap<ViewId, CalcData>,
+pub struct RegionCalc<'a, 'b> {
+    pub arena: &'a mut Arena,
+    pub text: &'b mut SimpleText,
+    pub calc_data: HashMap<ViewId, CalcData>,
 }
 
-impl RegionCalc {
-    pub fn new(arena: Arena, text: SimpleText) -> Self {
+impl<'a, 'b> RegionCalc<'a, 'b> {
+    pub fn new(arena: &'a mut Arena, text: &'b mut SimpleText) -> Self {
         Self {
             arena,
             text,
@@ -25,19 +25,18 @@ impl RegionCalc {
         }
     }
 
-    fn get_paragraph_size(&mut self, entity: &ParagraphEntity, max_width: f64) -> Region {
+    fn get_paragraph_size(&self, entity: &ParagraphEntity, max_width: f64) -> Region {
         let text_run = self.text.make_font_run(entity.styles.size as f32, None);
         let line_height = text_run.get_line_height();
         let space_width = text_run.get_char_data(' ').width;
         let height = entity
             .text
-            .clone()
             .lines()
             .map(|line| {
                 line.split_whitespace()
                     .fold((0.0, line_height), |(x, height), word| {
                         let width = text_run.get_word_width(word);
-                        if x + width > max_width {
+                        if x + width > max_width as _ {
                             (width + space_width, height + line_height)
                         } else {
                             (x + width + space_width, height)
@@ -46,7 +45,31 @@ impl RegionCalc {
                     .1
             })
             .fold(0.0, |acc, e| acc + e);
-        Region::new(0.0, 0.0, max_width, height, 0.0)
+        Region::new(0.0, 0.0, max_width, height as _)
+    }
+
+    fn get_text_blob_size(&self, entity: &TextEntity) -> Region {
+        let text_run = self.text.make_font_run(entity.styles.size as f32, None);
+        let line_height = text_run.get_line_height();
+        let space_width = text_run.get_char_data(' ').width;
+        let (max_width, height) = entity
+            .text
+            .lines()
+            .map(|line| {
+                line.split_whitespace().fold(0.0, |x, word| {
+                    let width = text_run.get_word_width(word);
+
+                    if x != 0.0 {
+                        x + width + space_width
+                    } else {
+                        width
+                    }
+                })
+            })
+            .fold((0.0f32, 0.0), |(max_width, height), e| {
+                (max_width.max(e), height + line_height)
+            });
+        Region::new(0.0, 0.0, max_width as _, height as _)
     }
 
     pub fn compute_regions(&mut self, root: ViewId, bounds: Region) -> Option<()> {
@@ -61,7 +84,7 @@ impl RegionCalc {
         let node = self.arena.get_view(id)?;
         let styles = &node.styles;
 
-        let initial_size = bounds.rect().size();
+        let initial_size = bounds.size();
         let size = if styles.size.zip {
             self.calc_data.get(&id)?.min_size.apply_min(initial_size)
         } else {
@@ -80,21 +103,15 @@ impl RegionCalc {
             VAlign::Center => origin.y + delta_height / 2.0,
             VAlign::Bottom => origin.y + delta_height,
         };
-        let region = Region::new(
-            origin_x,
-            origin_y,
-            size.width,
-            size.height,
-            styles.borders.radius,
-        );
+        let region = Region::new(origin_x, origin_y, size.width, size.height);
 
         let mut inner_region = {
-            let mut rect = region.rect();
+            let mut rect = region;
             rect.x0 += styles.padding.left + styles.borders.width;
             rect.x1 -= styles.padding.right + styles.borders.width;
             rect.y0 += styles.padding.top + styles.borders.width;
             rect.y1 -= styles.padding.bottom + styles.borders.width;
-            rect.to_rounded_rect(0.0)
+            rect
         };
 
         match &node.entity {
@@ -105,10 +122,8 @@ impl RegionCalc {
             Entity::Scroll(entity) => {
                 let id = entity.inner.clone();
                 let offset = entity.offset.clone();
-                let mut rect = inner_region.rect();
-                rect.x0 -= offset.x;
-                rect.y0 -= offset.y;
-                inner_region = rect.to_rounded_rect(inner_region.radii());
+                inner_region.x0 -= offset.x;
+                inner_region.y0 -= offset.y;
                 self.compute_region(id, inner_region);
             }
             Entity::Switch(entity) => {
@@ -323,8 +338,8 @@ impl RegionCalc {
                         + node.styles.borders.width * 2.0;
                     let size = self.get_paragraph_size(entity, width);
                     let min_size = SizeConstraints {
-                        width: Some(size.width + delta_width),
-                        height: Some(size.height + delta_height),
+                        width: Some(size.width() + delta_width),
+                        height: Some(size.height() + delta_height),
                     };
                     if let Some(constraints) = self.calc_data.get_mut(id) {
                         constraints.min_size = min_size;
@@ -358,30 +373,24 @@ impl RegionCalc {
     }
 
     fn result_regions_x_stack(&mut self, nodes: Vec<ViewId>, widths: Vec<f64>, region: Region) {
-        let mut x0 = region.rect().x0;
-        let mut current_region = region;
+        let mut x0 = region.x0;
         for (i, node) in nodes.iter().enumerate() {
             let width = widths[i];
-            current_region = current_region.with_width(width);
-            let mut rect = current_region.rect();
+            let mut rect = region.with_size((width, region.height()));
             rect.x0 = x0;
-            current_region = rect.to_rounded_rect(current_region.radii());
             x0 += width;
-            self.compute_region(*node, current_region);
+            self.compute_region(*node, rect);
         }
     }
 
     fn result_regions_y_stack(&mut self, nodes: Vec<ViewId>, heights: Vec<f64>, region: Region) {
-        let mut y0 = region.rect().y0;
-        let mut current_region = region;
+        let mut y0 = region.y0;
         for (i, node) in nodes.iter().enumerate() {
             let height = heights[i];
-            current_region = current_region.with_height(height);
-            let mut rect = current_region.rect();
+            let mut rect = region.with_size((region.width(), height));
             rect.y0 = y0;
-            current_region = rect.to_rounded_rect(current_region.radii());
             y0 += height;
-            self.compute_region(*node, current_region);
+            self.compute_region(*node, rect);
         }
     }
 
@@ -418,13 +427,10 @@ impl RegionCalc {
                 self.compute_size_constraints(id);
                 self.calc_data.get(&id)?.min_size
             }
-            Entity::Image(entity) => {
-                let size = rect_size(&entity.radii);
-                SizeConstraints {
-                    width: Some(size.width),
-                    height: Some(size.height),
-                }
-            }
+            Entity::Image(_) => SizeConstraints {
+                width: None,
+                height: None,
+            },
             Entity::Rect(entity) => {
                 let size = rect_size(&entity.radii);
                 SizeConstraints {
@@ -433,14 +439,14 @@ impl RegionCalc {
                 }
             }
             Entity::Text(entity) => {
-                let size = self.drawer.get_text_blob_size(entity);
+                let size = self.get_text_blob_size(entity);
                 style_max_size = SizeConstraints {
-                    width: Some(size.width),
-                    height: Some(size.height),
+                    width: Some(size.width()),
+                    height: Some(size.height()),
                 };
                 SizeConstraints {
-                    width: Some(size.width),
-                    height: Some(size.height),
+                    width: Some(size.width()),
+                    height: Some(size.height()),
                 }
             }
             Entity::Paragraph(entity) => {
@@ -528,10 +534,6 @@ impl RegionCalc {
             }
         }
         result
-    }
-
-    pub fn destroy(self) -> Arena {
-        self.arena
     }
 }
 

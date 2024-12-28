@@ -1,21 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    ".",
-    "crates/*",
-
-    "vello/vello",
-    "vello/vello_encoding",
-    "vello/vello_shaders",
-    "vello/vello_tests",
-
-    "vello/examples/headless",
-    "vello/examples/with_winit",
-    "vello/examples/run_wasm",
-    "vello/examples/scenes",
-    "vello/examples/simple",
-    "vello/examples/simple_sdl2",
-]
+members = [".", "crates/*"]
 
 [workspace.package]
 version = "0.3.0"
@@ -25,10 +10,7 @@ license = "MIT or Apache 2.0"
 repository = "https://github.com/rottenfront/kreuz"
 
 [workspace.dependencies]
-vello = { version = "0.3.0", path = "vello/vello" }
-vello_encoding = { version = "0.3.0", path = "vello/vello_encoding" }
-vello_shaders = { version = "0.3.0", path = "vello/vello_shaders" }
-scenes = { path = "vello/examples/scenes" }
+vello = "0.3"
 
 bytemuck = { version = "1.18.0", features = ["derive"] }
 skrifa = "0.24.1"

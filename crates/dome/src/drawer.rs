@@ -1,8 +1,8 @@
 use std::f64::consts::PI;
 
 use kreuz_ui::Scene;
-use kurbo::{Affine, Arc, Line, RoundedRect, Size, Stroke};
-use peniko::{BlendMode, BrushRef};
+use kurbo::{Affine, Arc, Line, Size, Stroke};
+use peniko::{BlendMode, BrushRef, Style};
 
 use super::*;
 
@@ -10,18 +10,25 @@ pub struct Context {
     pub window_size: Size,
 }
 
-pub struct DrawCtx<'a, 'b, 'c> {
+pub struct DrawCtx<'a, 'b, 'c, 'd> {
     drawer: &'a mut Scene,
-    context: &'b mut Context,
+    _context: &'b mut Context,
     arena: &'c Arena,
+    text: &'d SimpleText,
 }
 
-impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
-    pub fn new(drawer: &'a mut Scene, context: &'b mut Context, arena: &'c Arena) -> Self {
+impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
+    pub fn new(
+        drawer: &'a mut Scene,
+        context: &'b mut Context,
+        arena: &'c Arena,
+        text: &'d mut SimpleText,
+    ) -> Self {
         Self {
             drawer,
-            context,
+            _context: context,
             arena,
+            text,
         }
     }
 
@@ -40,7 +47,7 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
             Entity::Text(entity) => self.draw_text(&entity, region),
             Entity::Paragraph(entity) => self.draw_paragraph(&entity, region),
             Entity::Canvas(entity) => self.draw_canvas(&entity, region),
-            Entity::Scale(entity) => self.draw_scale(&entity),
+            Entity::Scale(entity) => self.draw_scale(&entity, region),
         }
     }
 
@@ -50,12 +57,10 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
         self.draw_background(&styles.background, styles.borders.radius, region);
 
         let padding = styles.padding;
-        let mut rect = region.rect();
-        rect.x0 += padding.left;
-        rect.y0 += padding.top;
-        rect.x1 -= padding.right;
-        rect.y1 -= padding.bottom;
-        region = RoundedRect::from_rect(rect, region.radii());
+        region.x0 += padding.left;
+        region.y0 += padding.top;
+        region.x1 -= padding.right;
+        region.y1 -= padding.bottom;
 
         region
     }
@@ -71,19 +76,18 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
 
         let width = *width;
         let radius = *radius;
-        let mut rect = region.rect();
 
         if !disabled.left && !disabled.lt && !disabled.lb {
-            rect.x0 += borders.width / 2.0;
+            region.x0 += borders.width / 2.0;
         }
         if !disabled.right && !disabled.rt && !disabled.rb {
-            rect.x1 -= borders.width / 2.0;
+            region.x1 -= borders.width / 2.0;
         }
         if !disabled.top && !disabled.lt && !disabled.rt {
-            rect.y0 += borders.width / 2.0;
+            region.y0 += borders.width / 2.0;
         }
         if !disabled.bottom && !disabled.lb && !disabled.rb {
-            rect.y1 -= borders.width / 2.0;
+            region.y1 -= borders.width / 2.0;
         }
 
         macro_rules! draw_line {
@@ -100,10 +104,34 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
             };
         }
 
-        draw_line!(left, rect.x0, rect.y0 + radius, rect.x0, rect.y1 - radius);
-        draw_line!(right, rect.x1, rect.y0 + radius, rect.x1, rect.y1 - radius);
-        draw_line!(top, rect.x0 + radius, rect.y0, rect.x1 - radius, rect.y0);
-        draw_line!(bottom, rect.x0 + radius, rect.y1, rect.x1 - radius, rect.y1);
+        draw_line!(
+            left,
+            region.x0,
+            region.y0 + radius,
+            region.x0,
+            region.y1 - radius
+        );
+        draw_line!(
+            right,
+            region.x1,
+            region.y0 + radius,
+            region.x1,
+            region.y1 - radius
+        );
+        draw_line!(
+            top,
+            region.x0 + radius,
+            region.y0,
+            region.x1 - radius,
+            region.y0
+        );
+        draw_line!(
+            bottom,
+            region.x0 + radius,
+            region.y1,
+            region.x1 - radius,
+            region.y1
+        );
 
         macro_rules! draw_arc {
             ($orientation:ident, $x0:expr, $y0:expr, $angle:expr) => {
@@ -114,7 +142,7 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
                         paint,
                         None,
                         &Arc::new(
-                            (rect.x0 + radius, rect.y0 + radius),
+                            (region.x0 + radius, region.y0 + radius),
                             (radius, radius),
                             0.0,
                             PI / 2.0,
@@ -131,25 +159,24 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
         draw_arc!(rb, region.x1 - radius, region.y1 - radius, PI / 2.0);
 
         if !disabled.left && !disabled.lt && !disabled.lb {
-            rect.x0 += borders.width / 2.0;
+            region.x0 += borders.width / 2.0;
         }
         if !disabled.right && !disabled.rt && !disabled.rb {
-            rect.x1 -= borders.width / 2.0;
+            region.x1 -= borders.width / 2.0;
         }
         if !disabled.top && !disabled.lt && !disabled.rt {
-            rect.y0 += borders.width / 2.0;
+            region.y0 += borders.width / 2.0;
         }
         if !disabled.bottom && !disabled.lb && !disabled.rb {
-            rect.y1 -= borders.width / 2.0;
+            region.y1 -= borders.width / 2.0;
         }
-        region = RoundedRect::from_rect(rect, region.radii());
 
         region
     }
 
-    fn draw_background<'d>(
+    fn draw_background<'e>(
         &mut self,
-        background: impl Into<BrushRef<'d>>,
+        background: impl Into<BrushRef<'e>>,
         border_radius: f64,
         region: Region,
     ) {
@@ -158,7 +185,7 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
             Affine::IDENTITY,
             background,
             None,
-            &region.rect().to_rounded_rect(border_radius),
+            &region.to_rounded_rect(border_radius),
         );
     }
 
@@ -202,57 +229,61 @@ impl<'a, 'b, 'c> DrawCtx<'a, 'b, 'c> {
             Affine::IDENTITY,
             &entity.paint,
             None,
-            &region.rect().to_rounded_rect(entity.radii),
+            &region.to_rounded_rect(entity.radii),
         );
     }
 
     fn draw_text(&mut self, entity: &TextEntity, region: Region) {
-        // let layout = self
-        //     .drawer
-        //     .text()
-        //     .new_text_layout(&entity.text)
-        //     .default_attribute(TextAttribute::FontFamily(entity.styles.font_family))
-        //     .default_attribute(TextAttribute::FontSize(entity.styles.size))
-        //     .max_width(region.width())
-        //     .build();
-        // let layout = if let Some(layout) = layout {
-        //     layout
-        // } else {
-        //     return;
-        // };
-        // self.drawer.draw_text(&layout, region.origin());
+        let text_run = self.text.make_font_run(entity.styles.size as _, None);
+        let (mut x, y) = region.origin().into();
+        let space_width = text_run.get_char_data(' ').width;
+        entity.text.split_whitespace().for_each(|word| {
+            x += text_run.draw_word(
+                &mut self.drawer,
+                &entity.styles.color,
+                &Style::Fill(Fill::NonZero),
+                Affine::translate((x, y)),
+                word,
+            ) as f64
+                + space_width as f64;
+        });
     }
 
     fn draw_paragraph(&mut self, entity: &ParagraphEntity, region: Region) {
-        // let layout = self
-        //     .drawer
-        //     .text()
-        //     .new_text_layout(&entity.text)
-        //     .default_attribute(TextAttribute::FontFamily(entity.styles.font_family))
-        //     .default_attribute(TextAttribute::FontSize(entity.styles.size))
-        //     .max_width(region.width())
-        //     .build();
-        // let layout = if let Some(layout) = layout {
-        //     layout
-        // } else {
-        //     return;
-        // };
-        // self.drawer.draw_text(&layout, region.origin());
+        let text_run = self.text.make_font_run(entity.styles.size as _, None);
+        let (mut x, mut y) = region.origin().into();
+        let line_height = text_run.get_line_height() as f64;
+        let space_width = text_run.get_char_data(' ').width as f64;
+        entity.text.split_whitespace().for_each(|word| {
+            if x + text_run.get_word_width(word) as f64 >= region.x1 {
+                x = region.origin().x;
+                y += line_height;
+            }
+            x += text_run.draw_word(
+                &mut self.drawer,
+                &entity.styles.color,
+                &Style::Fill(Fill::NonZero),
+                Affine::translate((x, y)),
+                word,
+            ) as f64
+                + space_width;
+        });
     }
 
     fn draw_canvas(&mut self, entity: &CanvasEntity, region: Region) {
         (entity.draw)(self, region);
     }
 
-    fn draw_scale(&mut self, entity: &ScaleEntity) {
+    fn draw_scale(&mut self, entity: &ScaleEntity, region: Region) {
         let id = entity.inner.clone();
         let scale = entity.scale.clone();
-        self.drawer.push_layer(BlendMode::new(
-            peniko::Mix::Normal,
-            peniko::Compose::DestAtop,
-        ));
-        self.drawer.transform(Affine::scale(scale));
+        self.drawer.push_layer(
+            BlendMode::new(peniko::Mix::Normal, peniko::Compose::DestAtop),
+            1.0,
+            Affine::scale(scale),
+            &region,
+        );
         self.draw(id);
-        self.drawer.restore();
+        self.drawer.pop_layer();
     }
 }
