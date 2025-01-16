@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [".", "crates/*"]
+members = [".", "glazier", "glazier/examples/*", "crates/*"]
 
 [workspace.package]
 version = "0.3.0"
@@ -10,6 +10,8 @@ license = "MIT or Apache 2.0"
 repository = "https://github.com/rottenfront/kreuz"
 
 [workspace.dependencies]
+glazier = { path = "glazier" }
+
 vello = "0.3"
 
 bytemuck = { version = "1.18.0", features = ["derive"] }
@@ -22,7 +24,7 @@ smallvec = "1.13.2"
 static_assertions = "1.1.0"
 thiserror = "2.0.2"
 
-wgpu = { version = "22.1.0" }
+wgpu = { version = "23" }
 log = "0.4.22"
 image = { version = "0.25.5", default-features = false }
 
@@ -40,6 +42,7 @@ kreuz-window = { path = "crates/kreuz-window" }
 
 # implementations
 kreuz-vello = { path = "crates/kreuz-vello" }
+kreuz-glazier = { path = "crates/kreuz-glazier" }
 kreuz-winit = { path = "crates/kreuz-winit" }
 
 [workspace.lints]
