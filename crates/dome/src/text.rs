@@ -1,35 +1,35 @@
-use kreuz_ui::{
-    skrifa::{
-        self,
-        charmap::Charmap,
-        instance::Location,
-        metrics::{GlyphMetrics, Metrics},
-        prelude::Size as SkrifaSize,
-        raw::FileRef,
-        FontRef, GlyphId, MetadataProvider,
-    },
-    Glyph, Scene,
-};
-use kurbo::Affine;
-use peniko::{Blob, Brush, BrushRef, Color, Fill, Font, StyleRef};
-use std::sync::Arc;
+// use kreuz_ui::{
+//     skrifa::{
+//         self,
+//         charmap::Charmap,
+//         instance::Location,
+//         metrics::{GlyphMetrics, Metrics},
+//         prelude::Size as SkrifaSize,
+//         raw::FileRef,
+//         FontRef, GlyphId, MetadataProvider,
+//     },
+//     Glyph, Scene,
+// };
+// use kurbo::Affine;
+// use peniko::{Blob, Brush, BrushRef, Color, Fill, Font, StyleRef};
+// use std::sync::Arc;
 
-// This is very much a hack to get things working.
-// On Windows, can set this to "c:\\Windows\\Fonts\\seguiemj.ttf" to get color emoji
-const ROBOTO_FONT: &[u8] = include_bytes!("../assets/roboto/Roboto-Regular.ttf");
-const INCONSOLATA_FONT: &[u8] = include_bytes!("../assets/inconsolata/Inconsolata.ttf");
-const NOTO_EMOJI_CBTF_SUBSET: &[u8] =
-    include_bytes!("../assets/noto_color_emoji/NotoColorEmoji-CBTF-Subset.ttf");
-const NOTO_EMOJI_COLR_SUBSET: &[u8] =
-    include_bytes!("../assets/noto_color_emoji/NotoColorEmoji-Subset.ttf");
+// // This is very much a hack to get things working.
+// // On Windows, can set this to "c:\\Windows\\Fonts\\seguiemj.ttf" to get color emoji
+// const ROBOTO_FONT: &[u8] = include_bytes!("../assets/roboto/Roboto-Regular.ttf");
+// const INCONSOLATA_FONT: &[u8] = include_bytes!("../assets/inconsolata/Inconsolata.ttf");
+// const NOTO_EMOJI_CBTF_SUBSET: &[u8] =
+//     include_bytes!("../assets/noto_color_emoji/NotoColorEmoji-CBTF-Subset.ttf");
+// const NOTO_EMOJI_COLR_SUBSET: &[u8] =
+//     include_bytes!("../assets/noto_color_emoji/NotoColorEmoji-Subset.ttf");
 
 pub struct SimpleText {
-    roboto: Font,
-    inconsolata: Font,
-    noto_emoji_colr_subset: Font,
-    noto_emoji_cbtf_subset: Font,
+    // roboto: Font,
+    // inconsolata: Font,
+    // noto_emoji_colr_subset: Font,
+    // noto_emoji_cbtf_subset: Font,
 }
-
+/*
 pub struct TextRunner<'a> {
     font: &'a Font,
     size: f32,
@@ -103,27 +103,27 @@ impl<'a> TextRunner<'a> {
         word: &str,
     ) -> f32 {
         let mut pen_x = 0.0;
-        scene
-            .draw_glyphs(self.font)
-            .font_size(self.size)
-            .transform(transform)
-            .glyph_transform(self.glyph_transform)
-            .normalized_coords(self.var_loc.coords())
-            .brush(brush.into())
-            .hint(false)
-            .draw(
-                style.into(),
-                word.chars().map(|ch| {
-                    let GlyphData { gid, width } = self.get_char_data(ch);
-                    let x = pen_x;
-                    pen_x += width;
-                    Glyph {
-                        id: gid.to_u32(),
-                        x,
-                        y: 0.0,
-                    }
-                }),
-            );
+        // scene
+        //     .draw_glyphs(self.font)
+        //     .font_size(self.size)
+        //     .transform(transform)
+        //     .glyph_transform(self.glyph_transform)
+        //     .normalized_coords(self.var_loc.coords())
+        //     .brush(brush.into())
+        //     .hint(false)
+        //     .draw(
+        //         style.into(),
+        //         word.chars().map(|ch| {
+        //             let GlyphData { gid, width } = self.get_char_data(ch);
+        //             let x = pen_x;
+        //             pen_x += width;
+        //             Glyph {
+        //                 id: gid.to_u32(),
+        //                 x,
+        //                 y: 0.0,
+        //             }
+        //         }),
+        //     );
         pen_x
     }
 }
@@ -323,3 +323,4 @@ fn to_font_ref(font: &Font) -> Option<FontRef<'_>> {
         FileRef::Collection(collection) => collection.get(font.index).ok(),
     }
 }
+*/

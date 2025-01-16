@@ -93,7 +93,7 @@ impl<'s, W: WindowHandler + 's, SW: SubwindowHandler, V: RootView> AppHandler<W,
                 // the same Scene is reused so that the underlying memory allocation can also be reused.
                 self.scene.reset();
 
-                self.root_view.render(&mut self.scene);
+                self.root_view.render(&mut kreuz_ui::Scene {});
 
                 // Get the RenderSurface (surface + config)
                 let surface = &render_state.surface;

@@ -93,13 +93,13 @@ impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
         macro_rules! draw_line {
             ($orientation:ident, $x0:expr, $y0:expr, $x1:expr, $y1:expr) => {
                 if !disabled.$orientation {
-                    self.drawer.stroke(
-                        &Stroke::new(width),
-                        Affine::IDENTITY,
-                        paint,
-                        None,
-                        &Line::new(($x0, $y0), ($x1, $y1)),
-                    );
+                    // self.drawer.stroke(
+                    //     &Stroke::new(width),
+                    //     Affine::IDENTITY,
+                    //     paint,
+                    //     None,
+                    //     &Line::new(($x0, $y0), ($x1, $y1)),
+                    // );
                 }
             };
         }
@@ -136,19 +136,19 @@ impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
         macro_rules! draw_arc {
             ($orientation:ident, $x0:expr, $y0:expr, $angle:expr) => {
                 if !disabled.$orientation {
-                    self.drawer.stroke(
-                        &Stroke::new(width),
-                        Affine::IDENTITY,
-                        paint,
-                        None,
-                        &Arc::new(
-                            (region.x0 + radius, region.y0 + radius),
-                            (radius, radius),
-                            0.0,
-                            PI / 2.0,
-                            $angle,
-                        ),
-                    );
+                    // self.drawer.stroke(
+                    //     &Stroke::new(width),
+                    //     Affine::IDENTITY,
+                    //     paint,
+                    //     None,
+                    //     &Arc::new(
+                    //         (region.x0 + radius, region.y0 + radius),
+                    //         (radius, radius),
+                    //         0.0,
+                    //         PI / 2.0,
+                    //         $angle,
+                    //     ),
+                    // );
                 }
             };
         }
@@ -180,13 +180,13 @@ impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
         border_radius: f64,
         region: Region,
     ) {
-        self.drawer.fill(
-            peniko::Fill::NonZero,
-            Affine::IDENTITY,
-            background,
-            None,
-            &region.to_rounded_rect(border_radius),
-        );
+        // self.drawer.fill(
+        //     peniko::Fill::NonZero,
+        //     Affine::IDENTITY,
+        //     background,
+        //     None,
+        //     &region.to_rounded_rect(border_radius),
+        // );
     }
 
     fn draw_box(&mut self, entity: &BoxEntity) {
@@ -203,10 +203,10 @@ impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
 
     fn draw_scrollable(&mut self, entity: &ScrollEntity, region: Region) {
         let id = entity.inner.clone();
-        self.drawer
-            .push_layer(peniko::Mix::Clip, 1.0, Affine::IDENTITY, &region);
+        // self.drawer
+        //     .push_layer(peniko::Mix::Clip, 1.0, Affine::IDENTITY, &region);
         self.draw(id);
-        self.drawer.pop_layer();
+        // self.drawer.pop_layer();
     }
 
     fn draw_switchable(&mut self, entity: &SwitchEntity) {
@@ -220,54 +220,54 @@ impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
             image.width as f64 / region.width(),
             image.height as f64 / region.height(),
         );
-        self.drawer.draw_image(&entity.image, affine);
+        // self.drawer.draw_image(&entity.image, affine);
     }
 
     fn draw_rect(&mut self, entity: &RectEntity, region: Region) {
-        self.drawer.fill(
-            Fill::EvenOdd,
-            Affine::IDENTITY,
-            &entity.paint,
-            None,
-            &region.to_rounded_rect(entity.radii),
-        );
+        // self.drawer.fill(
+        //     Fill::EvenOdd,
+        //     Affine::IDENTITY,
+        //     &entity.paint,
+        //     None,
+        //     &region.to_rounded_rect(entity.radii),
+        // );
     }
 
     fn draw_text(&mut self, entity: &TextEntity, region: Region) {
-        let text_run = self.text.make_font_run(entity.styles.size as _, None);
-        let (mut x, y) = region.origin().into();
-        let space_width = text_run.get_char_data(' ').width;
-        entity.text.split_whitespace().for_each(|word| {
-            x += text_run.draw_word(
-                &mut self.drawer,
-                &entity.styles.color,
-                &Style::Fill(Fill::NonZero),
-                Affine::translate((x, y)),
-                word,
-            ) as f64
-                + space_width as f64;
-        });
+        // let text_run = self.text.make_font_run(entity.styles.size as _, None);
+        // let (mut x, y) = region.origin().into();
+        // let space_width = text_run.get_char_data(' ').width;
+        // entity.text.split_whitespace().for_each(|word| {
+        //     x += text_run.draw_word(
+        //         &mut self.drawer,
+        //         &entity.styles.color,
+        //         &Style::Fill(Fill::NonZero),
+        //         Affine::translate((x, y)),
+        //         word,
+        //     ) as f64
+        //         + space_width as f64;
+        // });
     }
 
     fn draw_paragraph(&mut self, entity: &ParagraphEntity, region: Region) {
-        let text_run = self.text.make_font_run(entity.styles.size as _, None);
-        let (mut x, mut y) = region.origin().into();
-        let line_height = text_run.get_line_height() as f64;
-        let space_width = text_run.get_char_data(' ').width as f64;
-        entity.text.split_whitespace().for_each(|word| {
-            if x + text_run.get_word_width(word) as f64 >= region.x1 {
-                x = region.origin().x;
-                y += line_height;
-            }
-            x += text_run.draw_word(
-                &mut self.drawer,
-                &entity.styles.color,
-                &Style::Fill(Fill::NonZero),
-                Affine::translate((x, y)),
-                word,
-            ) as f64
-                + space_width;
-        });
+        // let text_run = self.text.make_font_run(entity.styles.size as _, None);
+        // let (mut x, mut y) = region.origin().into();
+        // let line_height = text_run.get_line_height() as f64;
+        // let space_width = text_run.get_char_data(' ').width as f64;
+        // entity.text.split_whitespace().for_each(|word| {
+        //     if x + text_run.get_word_width(word) as f64 >= region.x1 {
+        //         x = region.origin().x;
+        //         y += line_height;
+        //     }
+        //     x += text_run.draw_word(
+        //         &mut self.drawer,
+        //         &entity.styles.color,
+        //         &Style::Fill(Fill::NonZero),
+        //         Affine::translate((x, y)),
+        //         word,
+        //     ) as f64
+        //         + space_width;
+        // });
     }
 
     fn draw_canvas(&mut self, entity: &CanvasEntity, region: Region) {
@@ -277,13 +277,13 @@ impl<'a, 'b, 'c, 'd> DrawCtx<'a, 'b, 'c, 'd> {
     fn draw_scale(&mut self, entity: &ScaleEntity, region: Region) {
         let id = entity.inner.clone();
         let scale = entity.scale.clone();
-        self.drawer.push_layer(
-            BlendMode::new(peniko::Mix::Normal, peniko::Compose::DestAtop),
-            1.0,
-            Affine::scale(scale),
-            &region,
-        );
+        // self.drawer.push_layer(
+        //     BlendMode::new(peniko::Mix::Normal, peniko::Compose::DestAtop),
+        //     1.0,
+        //     Affine::scale(scale),
+        //     &region,
+        // );
         self.draw(id);
-        self.drawer.pop_layer();
+        // self.drawer.pop_layer();
     }
 }

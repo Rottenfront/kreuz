@@ -26,50 +26,52 @@ impl<'a, 'b> RegionCalc<'a, 'b> {
     }
 
     fn get_paragraph_size(&self, entity: &ParagraphEntity, max_width: f64) -> Region {
-        let text_run = self.text.make_font_run(entity.styles.size as f32, None);
-        let line_height = text_run.get_line_height();
-        let space_width = text_run.get_char_data(' ').width;
-        let height = entity
-            .text
-            .lines()
-            .map(|line| {
-                line.split_whitespace()
-                    .fold((0.0, line_height), |(x, height), word| {
-                        let width = text_run.get_word_width(word);
-                        if x + width > max_width as _ {
-                            (width + space_width, height + line_height)
-                        } else {
-                            (x + width + space_width, height)
-                        }
-                    })
-                    .1
-            })
-            .fold(0.0, |acc, e| acc + e);
-        Region::new(0.0, 0.0, max_width, height as _)
+        // let text_run = self.text.make_font_run(entity.styles.size as f32, None);
+        // let line_height = text_run.get_line_height();
+        // let space_width = text_run.get_char_data(' ').width;
+        // let height = entity
+        //     .text
+        //     .lines()
+        //     .map(|line| {
+        //         line.split_whitespace()
+        //             .fold((0.0, line_height), |(x, height), word| {
+        //                 let width = text_run.get_word_width(word);
+        //                 if x + width > max_width as _ {
+        //                     (width + space_width, height + line_height)
+        //                 } else {
+        //                     (x + width + space_width, height)
+        //                 }
+        //             })
+        //             .1
+        //     })
+        //     .fold(0.0, |acc, e| acc + e);
+        // Region::new(0.0, 0.0, max_width, height as _)
+        Default::default()
     }
 
     fn get_text_blob_size(&self, entity: &TextEntity) -> Region {
-        let text_run = self.text.make_font_run(entity.styles.size as f32, None);
-        let line_height = text_run.get_line_height();
-        let space_width = text_run.get_char_data(' ').width;
-        let (max_width, height) = entity
-            .text
-            .lines()
-            .map(|line| {
-                line.split_whitespace().fold(0.0, |x, word| {
-                    let width = text_run.get_word_width(word);
+        // let text_run = self.text.make_font_run(entity.styles.size as f32, None);
+        // let line_height = text_run.get_line_height();
+        // let space_width = text_run.get_char_data(' ').width;
+        // let (max_width, height) = entity
+        //     .text
+        //     .lines()
+        //     .map(|line| {
+        //         line.split_whitespace().fold(0.0, |x, word| {
+        //             let width = text_run.get_word_width(word);
 
-                    if x != 0.0 {
-                        x + width + space_width
-                    } else {
-                        width
-                    }
-                })
-            })
-            .fold((0.0f32, 0.0), |(max_width, height), e| {
-                (max_width.max(e), height + line_height)
-            });
-        Region::new(0.0, 0.0, max_width as _, height as _)
+        //             if x != 0.0 {
+        //                 x + width + space_width
+        //             } else {
+        //                 width
+        //             }
+        //         })
+        //     })
+        //     .fold((0.0f32, 0.0), |(max_width, height), e| {
+        //         (max_width.max(e), height + line_height)
+        //     });
+        // Region::new(0.0, 0.0, max_width as _, height as _)
+        Default::default()
     }
 
     pub fn compute_regions(&mut self, root: ViewId, bounds: Region) -> Option<()> {

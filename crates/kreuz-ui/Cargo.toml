@@ -8,9 +8,7 @@ repository.workspace = true
 
 [dependencies]
 peniko.workspace = true
-
-# TODO: remove
-vello.workspace = true
+kurbo.workspace = true
 
 [lints]
 workspace = true
