@@ -149,7 +149,7 @@ impl FileDialogToken {
 /// Levels in the window system - Z order for display purposes.
 /// Describes the purpose of a window and should be mapped appropriately to match platform
 /// conventions.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone)]
 pub enum WindowLevel {
     /// A top level app window.
     AppWindow,
@@ -181,7 +181,7 @@ pub enum WindowState {
 }
 
 /// A handle to a platform window object.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct WindowHandle(pub(crate) backend::WindowHandle);
 
 impl Default for WindowHandle {
@@ -560,7 +560,7 @@ impl WindowBuilder {
 /// App behavior, supplied by the app.
 ///
 /// Many of the "window procedure" messages map to calls to this trait.
-pub trait WinHandler {
+pub trait WinHandler: Send + Sync {
     /// Provide the handler with a handle to the window so that it can
     /// invalidate or make other requests.
     ///

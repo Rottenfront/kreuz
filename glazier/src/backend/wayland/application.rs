@@ -18,19 +18,24 @@ use std::{
     cell::RefCell,
     collections::HashMap,
     ffi::c_void,
+    ptr::{null_mut, NonNull},
     rc::{Rc, Weak},
     sync::mpsc::{Sender, TryRecvError},
 };
 
+use raw_window_handle::{
+    DisplayHandle, HandleError, HasDisplayHandle, RawDisplayHandle, WaylandDisplayHandle,
+};
 use smithay_client_toolkit::{
     compositor::CompositorState,
     output::OutputState,
     reexports::{
         calloop::{channel, EventLoop, LoopHandle, LoopSignal},
+        calloop_wayland_source::WaylandSource,
         client::{
             globals::{registry_queue_init, BindError},
             protocol::wl_compositor,
-            Connection, QueueHandle, WaylandSource,
+            Connection, QueueHandle,
         },
     },
     registry::RegistryState,
@@ -74,8 +79,7 @@ impl Application {
         let loop_handle = event_loop.handle();
         let loop_signal = event_loop.get_signal();
 
-        WaylandSource::new(event_queue)
-            .unwrap()
+        WaylandSource::new(conn.clone(), event_queue)
             .insert(loop_handle.clone())
             .unwrap();
 
@@ -190,6 +194,23 @@ impl Application {
         Some(AppHandle {
             loop_sender: self.loop_sender.clone(),
         })
+    }
+}
+
+impl HasDisplayHandle for Application {
+    fn display_handle(
+        &self,
+    ) -> Result<raw_window_handle::DisplayHandle<'_>, raw_window_handle::HandleError> {
+        if self.raw_display_handle == null_mut() {
+            Err(HandleError::Unavailable)
+        } else {
+            let Some(ptr) = NonNull::new(self.raw_display_handle) else {
+                return Err(HandleError::Unavailable);
+            };
+            let handle = WaylandDisplayHandle::new(ptr);
+            let handle = RawDisplayHandle::Wayland(handle);
+            Ok(unsafe { DisplayHandle::borrow_raw(handle) })
+        }
     }
 }
 

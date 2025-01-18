@@ -1,7 +1,7 @@
 use std::{
     cell::Cell,
     collections::HashMap,
-    rc::{Rc, Weak},
+    rc::{Rc, Weak}, sync::Arc,
 };
 
 use crate::{
@@ -17,6 +17,7 @@ use super::{
     WaylandState,
 };
 
+use flo_binding::{Binding, Bound, MutableBound};
 use keyboard_types::KeyState;
 use smithay_client_toolkit::{
     delegate_seat,
@@ -109,7 +110,7 @@ type Windows = HashMap<WindowId, WaylandWindowState>;
 /// in a `Rc<Cell<TextInputProperties>>`, known as
 ///
 /// The contents of this struct are opaque to applications.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(in crate::backend::wayland) struct TextInputProperties {
     pub active_text_field: Option<TextFieldToken>,
     pub next_text_field: Option<TextFieldToken>,
@@ -119,8 +120,8 @@ pub(in crate::backend::wayland) struct TextInputProperties {
     pub active_text_layout_changed: bool,
 }
 
-pub(in crate::backend::wayland) type TextInputCell = Rc<Cell<TextInputProperties>>;
-pub(in crate::backend::wayland) type WeakTextInputCell = Weak<Cell<TextInputProperties>>;
+pub(in crate::backend::wayland) type TextInputCell = Binding<TextInputProperties>;
+pub(in crate::backend::wayland) type WeakTextInputCell = Option<Binding<TextInputProperties>>;
 
 struct FutureInputLock<'a> {
     handler: &'a mut dyn WinHandler,
